@@ -46,26 +46,68 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvMainDump1"
+                android:id="@+id/tvMainLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:text=""
                 android:textAlignment="textStart"
                 android:textSize="13sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 android:typeface="monospace" />
 
+            <Button
+                android:id="@+id/btnMainStartActivity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="start this activity"
+                android:visibility="gone" />
+
             <TextView
-                android:id="@+id/tvMainReadResult"
+                android:id="@+id/tvMainChat"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="10dp"
-                android:text="read result"
+                android:text="chat"
                 android:textAlignment="textStart"
                 android:textSize="14sp"
                 android:textStyle="normal"
                 android:typeface="monospace" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:id="@+id/etMainTextToSendDecoration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="8dp"
+                android:hint="enter the text to chat"
+                app:boxCornerRadiusBottomEnd="5dp"
+                app:boxCornerRadiusBottomStart="5dp"
+                app:boxCornerRadiusTopEnd="5dp"
+                app:boxCornerRadiusTopStart="5dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMainTextToSend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:focusable="true"
+                    android:text=""
+                    tools:ignore="KeyboardInaccessibleWidget" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/btnMainSendText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="send"
+                android:visibility="visible" />
 
         </LinearLayout>
 
