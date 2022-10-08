@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'de.androidcrypto.bluetoothdeveloperguidesample'
+    namespace 'de.androidcrypto.bluetoothdeveloperguidesampleorg'
     compileSdk 32
 
     defaultConfig {
-        applicationId "de.androidcrypto.bluetoothdeveloperguidesample"
+        applicationId "de.androidcrypto.bluetoothdeveloperguidesampleorg"
         minSdk 23
         targetSdk 32
         versionCode 1

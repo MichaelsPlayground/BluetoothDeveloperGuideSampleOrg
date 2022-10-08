@@ -36,16 +36,6 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tvInformation"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="10dp"
-                android:text="When a tag is discovered the data from all pages will be read."
-                android:textAlignment="center"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <TextView
                 android:id="@+id/tvMainLog"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-package de.androidcrypto.bluetoothdeveloperguidesample;
+package de.androidcrypto.bluetoothdeveloperguidesampleorg;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -8,11 +8,9 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;

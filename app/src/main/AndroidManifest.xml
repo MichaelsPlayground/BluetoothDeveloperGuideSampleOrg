@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Min/target SDK versions (<uses-sdk>) managed by build.gradle -->
     <!-- Request legacy Bluetooth permissions on older devices. -->
     <uses-permission
@@ -42,8 +41,15 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.BluetoothDeveloperGuideSample"
+        android:theme="@style/Theme.BluetoothDeveloperGuideSampleOrg"
         tools:targetApi="31">
+        <activity
+            android:name=".DeviceListOwnActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -57,13 +63,11 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-
-
-    <activity
-        android:name=".DeviceListActivity"
-        android:configChanges="orientation|keyboardHidden"
-        android:label="select a device to connect"
-        android:theme="@android:style/Theme.Holo.Dialog" />
+        <activity
+            android:name=".DeviceListActivity"
+            android:configChanges="orientation|keyboardHidden"
+            android:label="select a device to connect"
+            android:theme="@android:style/Theme.Holo.Dialog" />
     </application>
 
 </manifest>

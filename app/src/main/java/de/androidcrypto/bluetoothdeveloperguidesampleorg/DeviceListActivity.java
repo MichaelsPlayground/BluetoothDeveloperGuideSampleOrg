@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.androidcrypto.bluetoothdeveloperguidesample;
+package de.androidcrypto.bluetoothdeveloperguidesampleorg;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

@@ -1,4 +1,4 @@
-package de.androidcrypto.bluetoothdeveloperguidesample;
+package de.androidcrypto.bluetoothdeveloperguidesampleorg;
 
 import android.content.Context;
 
