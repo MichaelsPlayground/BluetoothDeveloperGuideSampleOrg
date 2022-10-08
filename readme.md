@@ -5,9 +5,9 @@ with another Android device.
 
 These are the steps for a successful communication
 
--step 1: check if the device has a Bluetooth sender/receiver chip
--step 2: check that Bluetooth is enabled on the device
--step 3: grant the permissions that are needed to run the app
+- step 1: check if the device has a Bluetooth sender/receiver chip
+- step 2: check that Bluetooth is enabled on the device
+- step 3: grant the permissions that are needed to run the app
 -step 4: find devices nearby and make your device discoverable by other devices
 -step 5: run the server to listen for incomming connection requests
 -step 6: list found devices
