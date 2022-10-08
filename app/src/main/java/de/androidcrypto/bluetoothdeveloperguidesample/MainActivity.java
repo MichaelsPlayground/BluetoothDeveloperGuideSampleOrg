@@ -25,17 +25,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.material.textfield.TextInputLayout;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
     BluetoothManager bluetoothManager;
     BluetoothAdapter bluetoothAdapter;
+    ConnectedThread mConnectedThread;
 
-    Button startAppActivity, sendText;
-    TextView textViewLog;
+    Button discoverable, scan, sendText;
+    TextView textViewLog, textViewChat;
     EditText textToSend;
+    TextInputLayout textToSendDecoration;
 
     private static final int REQUEST_ENABLE_BT = 201;
     private static final int REQUEST_DISCOVERABLE_BT = 202;
@@ -80,9 +87,12 @@ public class MainActivity extends AppCompatActivity {
         Toolbar myToolbar = (Toolbar) findViewById(R.id.main_toolbar);
         setSupportActionBar(myToolbar);
 
-        startAppActivity = findViewById(R.id.btnMainStartActivity);
+        discoverable = findViewById(R.id.btnMainDiscoverable);
+        scan = findViewById(R.id.btnMainScan);
         textViewLog = findViewById(R.id.tvMainLog);
+        textViewChat = findViewById(R.id.tvMainChat);
         textToSend = findViewById(R.id.etMainTextToSend);
+        textToSendDecoration = findViewById(R.id.etMainTextToSendDecoration);
         sendText = findViewById(R.id.btnMainSendText);
 
         // step 1 check if the device has a Bluetooth sender/receiver chip
@@ -97,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
         appendLog("checking if the app has all permissions granted");
         requestBlePermissions(this, PERMISSIONS_REQUEST_CODE);
 
-
         // step 3: check that Bluetooth is enabled on the device
         if (!bluetoothAdapter.isEnabled()) {
             appendLog("Bluetooth is not enabled on the device, try to enable it");
@@ -108,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // now the app is ready to run, the button startAppActivity is enabled
-        startAppActivity.setVisibility(View.VISIBLE);
-        startAppActivity.setOnClickListener(new View.OnClickListener() {
+        discoverable.setVisibility(View.VISIBLE);
+        discoverable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // now it is time for step 4 and start the (listening) server
@@ -129,12 +138,33 @@ public class MainActivity extends AppCompatActivity {
                 Intent serverIntent = new Intent(MainActivity.this, DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
                 */
+
             }
         });
 
+        scan.setVisibility(View.VISIBLE);
+        scan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // now it is time for step 4 and start the (listening) server
+                startServer();
+                // if the user does not make the devices not discoverable then he can connect to
+                // previously connected devices only
 
+                // step 5 find devices nearby and make your device discoverable by other devices
+                // Launch the DeviceListActivity to see devices and do scan
+                appendLog("check for already paired and new devices");
+                Intent serverIntent = new Intent(MainActivity.this, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+            }
+        });
 
-
+        sendText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sendMessage();
+            }
+        });
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -160,14 +190,7 @@ public class MainActivity extends AppCompatActivity {
                     // User did not enable Bluetooth or an error occurred
                     appendLog("Bluetooth is NOT discoverable by other devices");
                 }
-                // if the user does not make the devices not discoverable then he can connet to
-                // previously connected devices only
 
-                // step 54 find devices nearby and make your device discoverable by other devices
-                // Launch the DeviceListActivity to see devices and do scan
-                appendLog("check for already paired and new devices");
-                Intent serverIntent = new Intent(MainActivity.this, DeviceListActivity.class);
-                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
                 break;
             case REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
@@ -212,6 +235,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void enableChatInput() {
+        runOnUiThread(() -> {
+            textViewChat.setVisibility(View.VISIBLE);
+            sendText.setVisibility(View.VISIBLE);
+            textToSendDecoration.setVisibility(View.VISIBLE);
+            // this is cancelling the DeviceList activity
+            //startActivity(new Intent(MainActivity.this, DeviceListActivity.class));
+        });
+    }
+
     private void appendLog(String message) {
         runOnUiThread(() -> {
             String newMessages = textViewLog.getText().toString() + "\n" + message;
@@ -219,11 +252,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void appendLogOrg(String message) {
-        String newMessages = textViewLog.getText().toString() + "\n" + message;
-        textViewLog.setText(newMessages);
+    private void appendChat(String message) {
+        runOnUiThread(() -> {
+            String newMessages = textViewChat.getText().toString() + "\n" + message;
+            textViewChat.setText(newMessages);
+        });
     }
-
 
     /**
      * we are pairing and connecting the two devices
@@ -314,15 +348,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void connected(BluetoothSocket mmSocket) {
-        appendLog("devices are connected, starting the chat");
-        //Log.d(TAG, "connected: Starting.");
-
-        // Start the thread to manage the connection and perform transmissions
-        //mConnectedThread = new ConnectedThread(mmSocket);
-        //mConnectedThread.start();
-    }
-
     /**
      * The AcceptThread is the server that needs to run and listen for any incomming connection
      * requests from another device ("client"). If the UUID is not matching there will be no
@@ -336,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class AcceptThread extends Thread {
-
         // The local server socket
         private final BluetoothServerSocket mmServerSocket;
 
@@ -354,7 +378,6 @@ public class MainActivity extends AppCompatActivity {
                 appendLog("AcceptThread: IOException: " + e.getMessage());
                 //Log.e(TAG, "AcceptThread: IOException: " + e.getMessage());
             }
-
             mmServerSocket = tmp;
         }
 
@@ -399,8 +422,107 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("MissingPermission")
+    private void connected(BluetoothSocket mmSocket) {
+        appendLog("devices are connected, starting the chat");
+        String chatName = mmSocket.getRemoteDevice().getName();
+        appendLog("connected to " + chatName);
+        appendChat("connected to " + chatName);
+        enableChatInput();
+        //Log.d(TAG, "connected: Starting.");
+
+        // Start the thread to manage the connection and perform transmissions
+        mConnectedThread = new ConnectedThread(mmSocket);
+        mConnectedThread.start();
+    }
+
     /**
-     * Here we are doing the tasks for the menu
+     * The ConnectedThread takes the socket after connection eather from AcceptThread or
+     * ConnectTread as is doing all of the communication
+     */
+
+    private class ConnectedThread extends Thread {
+        private final BluetoothSocket mmSocket;
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket) {
+            appendLog("ConnectedThread: Starting.");
+            //Log.d(TAG, "ConnectedThread: Starting.");
+
+            mmSocket = socket;
+            InputStream tmpIn = null;
+            OutputStream tmpOut = null;
+
+            try {
+                tmpIn = mmSocket.getInputStream();
+                tmpOut = mmSocket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            mmInStream = tmpIn;
+            mmOutStream = tmpOut;
+        }
+
+        public void run(){
+            byte[] buffer = new byte[1024];  // buffer store for the stream
+
+            int bytes; // bytes returned from read()
+
+            // Keep listening to the InputStream until an exception occurs
+            while (true) {
+                // Read from the InputStream
+                try {
+                    bytes = mmInStream.read(buffer);
+                    String incomingMessage = new String(buffer, 0, bytes);
+                    appendLog("ConnectedThread InputStream: " + incomingMessage);
+                    //Log.d(TAG, "InputStream: " + incomingMessage);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            appendChat("3rd: " + incomingMessage);
+                            //view_data.setText(incomingMessage);
+                        }
+                    });
+                } catch (IOException e) {
+                    appendLog("ConnectedThread write: Error reading Input Stream. " + e.getMessage());
+                    //Log.e(TAG, "write: Error reading Input Stream. " + e.getMessage() );
+                    break;
+                }
+            }
+        }
+
+        public void write(byte[] bytes) {
+            String text = new String(bytes, Charset.defaultCharset());
+            appendLog("ConnectedThread write Writing to outputstream : " + text);
+            //Log.d(TAG, "write: Writing to outputstream: " + text);
+            try {
+                mmOutStream.write(bytes);
+            } catch (IOException e) {
+                appendLog("ConnectedThread write: Error writing to output stream. " + e.getMessage());
+                //Log.e(TAG, "write: Error writing to output stream. " + e.getMessage() );
+            }
+        }
+
+        // Call this from the main activity to shutdown the connection
+        public void cancel() {
+            try {
+                mmSocket.close();
+            } catch (IOException e) { }
+        }
+    }
+
+    public void sendMessage() {
+        String message = textToSend.getText().toString();
+        byte[] bytes = message.getBytes(Charset.defaultCharset());
+        mConnectedThread.write(bytes);
+        appendChat(("own: " + message));
+        textToSend.setText("");
+    }
+
+    /**
+     * tasks for the menu
      * @param menu
      */
 
