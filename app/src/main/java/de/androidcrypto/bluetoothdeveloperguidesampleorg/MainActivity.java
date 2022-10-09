@@ -11,9 +11,11 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -35,12 +37,21 @@ public class MainActivity extends AppCompatActivity {
 
     BluetoothManager bluetoothManager;
     BluetoothAdapter bluetoothAdapter;
+
+    AcceptThread mAcceptThread;
+    ConnectThread mConnectThread;
     ConnectedThread mConnectedThread;
 
     Button discoverable, scan, list, sendText;
     TextView textViewLog, textViewChat;
     EditText textToSend;
     TextInputLayout textToSendDecoration;
+
+    /**
+     * Return Intent extra
+     */
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
+    String macAddressFromScan = ""; // will get filled by Intent from DeviceListOwnActivity
 
     private static final int REQUEST_ENABLE_BT = 201;
     private static final int REQUEST_DISCOVERABLE_BT = 202;
@@ -93,6 +104,29 @@ public class MainActivity extends AppCompatActivity {
         textToSend = findViewById(R.id.etMainTextToSend);
         textToSendDecoration = findViewById(R.id.etMainTextToSendDecoration);
         sendText = findViewById(R.id.btnMainSendText);
+
+        // receive the address from DeviceListOwnActivity, if we receive data run the connection part
+        Intent incommingIntent = getIntent();
+        Bundle extras = incommingIntent.getExtras();
+        if (extras != null) {
+            macAddressFromScan = extras.getString(EXTRA_DEVICE_ADDRESS); // retrieve the data using keyName
+            System.out.println("Main received data: " + macAddressFromScan);
+            try {
+                if (!macAddressFromScan.equals("")) {
+                    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    System.out.println("MAC address received: " + macAddressFromScan + " ... try to connect with...");
+                    appendLog("MAC address received: " + macAddressFromScan + " ... try to connect with...");
+                    // Get the BluetoothDevice object
+                    BluetoothDevice device = bluetoothAdapter.getRemoteDevice(macAddressFromScan);
+                    ConnectThread connect = new ConnectThread(device, MY_UUID);
+                    connect.start();
+                }
+            } catch (NullPointerException e) {
+                // do nothing, there are just no data
+            }
+        }
+
+
 
         // step 1 check if the device has a Bluetooth sender/receiver chip
         if (isBluetoothAvailableOnDevice()) {
@@ -147,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // now it is time for step 4 and start the (listening) server
                 startServer();
-                // if the user does not make the devices not discoverable then he can connect to
+                // if the user does not make the devices discoverable then he can connect to
                 // previously connected devices only
 
                 // step 5 find devices nearby and make your device discoverable by other devices
@@ -167,10 +201,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // this is the separate send button
         sendText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 sendMessage();
+            }
+        });
+
+        // this is the send button in keyboard
+        textToSend.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (actionId == EditorInfo.IME_ACTION_SEND) {
+                    sendMessage();
+                    handled = true;
+                }
+                return handled;
             }
         });
     }
@@ -253,6 +301,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void disableChatInput() {
+        runOnUiThread(() -> {
+            textViewChat.setVisibility(View.GONE);
+            sendText.setVisibility(View.GONE);
+            textToSendDecoration.setVisibility(View.GONE);
+            // this is cancelling the DeviceList activity
+            //startActivity(new Intent(MainActivity.this, DeviceListActivity.class));
+        });
+    }
+
     private void appendLog(String message) {
         runOnUiThread(() -> {
             String newMessages = textViewLog.getText().toString() + "\n" + message;
@@ -282,8 +340,8 @@ public class MainActivity extends AppCompatActivity {
         appendLog("MAC address received: " + address + ", trying to connect...");
         // Get the BluetoothDevice object
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
-        ConnectThread connect = new ConnectThread(device, MY_UUID);
-        connect.start();
+        mConnectThread = new ConnectThread(device, MY_UUID);
+        mConnectThread.start();
     }
 
     /**
@@ -364,8 +422,8 @@ public class MainActivity extends AppCompatActivity {
      */
 
     public void startServer() {
-        AcceptThread accept = new AcceptThread();
-        accept.start();
+        mAcceptThread = new AcceptThread();
+        mAcceptThread.start();
     }
 
     private class AcceptThread extends Thread {
@@ -538,13 +596,23 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_activity_main, menu);
 
-        MenuItem mExportMail = menu.findItem(R.id.action_export_mail);
-        mExportMail.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        /**
+         * resets the connection, log and chat
+         */
+        MenuItem mResetApp = menu.findItem(R.id.action_reset);
+        mResetApp.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 //Intent i = new Intent(MainActivity.this, AddEntryActivity.class);
                 //startActivity(i);
                 //exportDumpMail();
+
+                textViewLog.setText("app reset");
+                textViewChat.setText("");
+                disableChatInput();
+                if (mConnectThread != null) mConnectThread.cancel();
+                if (mAcceptThread != null) mAcceptThread.cancel();
+                startServer();
                 return false;
             }
         });

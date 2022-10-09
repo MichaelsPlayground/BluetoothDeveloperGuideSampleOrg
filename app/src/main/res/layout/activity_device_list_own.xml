@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="10dp"
-        android:text="This activity will scan for other Bluetooth devices, click on one to connect with. The complete scan will last about 12 seconds."
+        android:text="This activity will scan for other Bluetooth devices, click on one to connect with. The complete scan will last about 12 seconds.\nA device with a null name may not suitable for a connection."
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold" />

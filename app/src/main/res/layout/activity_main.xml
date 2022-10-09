@@ -98,6 +98,12 @@
                 android:typeface="monospace"
                 android:visibility="gone"/>
 
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:id="@+id/etMainTextToSendDecoration"
@@ -109,6 +115,8 @@
                 android:hint="enter the text to chat"
                 app:counterEnabled="true"
                 app:counterMaxLength="30"
+                android:minWidth="230dp"
+                android:maxWidth="230dp"
                 android:visibility="gone"
                 app:boxCornerRadiusBottomEnd="5dp"
                 app:boxCornerRadiusBottomStart="5dp"
@@ -120,23 +128,26 @@
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etMainTextToSend"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:focusable="true"
                     android:text=""
                     android:maxLength="30"
+                    android:inputType="text"
+                    android:imeOptions="actionSend"
                     tools:ignore="KeyboardInaccessibleWidget" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/btnMainSendText"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:text="send"
                 android:visibility="gone" />
+        </LinearLayout>
 
         </LinearLayout>
 

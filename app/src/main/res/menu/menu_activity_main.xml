@@ -6,8 +6,8 @@
     <!-- https://fonts.google.com/icons?selected=Material+Icons -->
 
     <item
-        android:id="@+id/action_export_mail"
-        android:title="Export Mail"
+        android:id="@+id/action_reset"
+        android:title="reset app"
         app:showAsAction="never"/>
 
     <item

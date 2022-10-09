@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -27,6 +28,11 @@ public class DeviceListOwnActivity extends AppCompatActivity {
     ArrayAdapter<String> scannedDevicesArrayAdapter;
     private BluetoothAdapter mBtAdapter;
 
+    /**
+     * Return Intent extra
+     */
+    public static String EXTRA_DEVICE_ADDRESS = "device_address";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,35 +45,54 @@ public class DeviceListOwnActivity extends AppCompatActivity {
         listView = findViewById(R.id.lvListListView);
         scan = findViewById(R.id.btnListScan);
 
+        // populate the data
+        scannedDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_name);
+        listView.setAdapter(scannedDevicesArrayAdapter);
+
+        // Register for broadcasts when a device is discovered
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mReceiver, filter);
+
+        // Register for broadcasts when discovery has finished
+        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(mReceiver, filter);
+
+        // Get the local Bluetooth adapter
+        mBtAdapter = BluetoothAdapter.getDefaultAdapter();
+
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 System.out.println("scan clicked");
                 progressBar.setIndeterminate(false);
                 progressBar.setVisibility(View.VISIBLE);
-                // populate the data
-                scannedDevicesArrayAdapter = new ArrayAdapter<>(view.getContext(), R.layout.device_name);
-                listView.setAdapter(scannedDevicesArrayAdapter);
-
-                // Register for broadcasts when a device is discovered
-                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                registerReceiver(mReceiver, filter);
-
-                // Register for broadcasts when discovery has finished
-                filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-                registerReceiver(mReceiver, filter);
-
-                // Get the local Bluetooth adapter
-                mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-
                 doDiscovery();
             }
         });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @SuppressLint("MissingPermission")
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                progressBar.setIndeterminate(true);
+                progressBar.setVisibility(View.GONE);
                 System.out.println("This item was clicked: " + i);
+                // Cancel discovery because it's costly and we're about to connect
+                mBtAdapter.cancelDiscovery();
+                // Get the device MAC address, which is the last 17 chars in the View
+                String info = ((TextView) view).getText().toString();
+                String address = info.substring(info.length() - 17);
+                // check for ther text "scanning complete"
+                if (address.equalsIgnoreCase("scanning complete")) {
+                    System.out.println("do not use this data");
+                    address = "";
+                }
+                System.out.println("*** MAC: " + address);
+                // Create the Intent and include the MAC address
+                Intent intent = new Intent(DeviceListOwnActivity.this, MainActivity.class);
+                intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+                startActivity(intent);
+                finish();
             }
         });
     }
@@ -95,7 +120,7 @@ public class DeviceListOwnActivity extends AppCompatActivity {
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 System.out.println("scanning finished");
                 progressBar.setIndeterminate(true);
-                progressBar.setVisibility(View.GONE);;
+                progressBar.setVisibility(View.GONE);
                 scannedDevicesArrayAdapter.add("scanning complete");
                 /*
                 if (scannedDevicesArrayAdapter.getCount() == 0) {
@@ -137,6 +162,10 @@ public class DeviceListOwnActivity extends AppCompatActivity {
         }
 
         // Unregister broadcast listeners
-        this.unregisterReceiver(mReceiver);
+        try {
+            this.unregisterReceiver(mReceiver);
+        } catch (IllegalArgumentException e) {
+            // the receiver is not registered any more
+        }
     }
 }
