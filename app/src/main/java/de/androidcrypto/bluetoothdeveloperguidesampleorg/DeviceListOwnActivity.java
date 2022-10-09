@@ -22,7 +22,7 @@ import androidx.appcompat.widget.Toolbar;
 public class DeviceListOwnActivity extends AppCompatActivity {
 
     ListView listView;
-    Button scan;
+    Button scan, btnReturn;
     ProgressBar progressBar;
 
     ArrayAdapter<String> scannedDevicesArrayAdapter;
@@ -44,6 +44,7 @@ public class DeviceListOwnActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.pbList);
         listView = findViewById(R.id.lvListListView);
         scan = findViewById(R.id.btnListScan);
+        btnReturn = findViewById(R.id.btnListReturn);
 
         // populate the data
         scannedDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_name);
@@ -63,7 +64,7 @@ public class DeviceListOwnActivity extends AppCompatActivity {
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                System.out.println("scan clicked");
+                scannedDevicesArrayAdapter.clear();
                 progressBar.setIndeterminate(false);
                 progressBar.setVisibility(View.VISIBLE);
                 doDiscovery();
@@ -91,6 +92,16 @@ public class DeviceListOwnActivity extends AppCompatActivity {
                 // Create the Intent and include the MAC address
                 Intent intent = new Intent(DeviceListOwnActivity.this, MainActivity.class);
                 intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        btnReturn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // return without any MAC address
+                Intent intent = new Intent(DeviceListOwnActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
             }
