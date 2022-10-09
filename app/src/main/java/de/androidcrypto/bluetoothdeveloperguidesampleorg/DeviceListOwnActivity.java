@@ -1,6 +1,5 @@
 package de.androidcrypto.bluetoothdeveloperguidesampleorg;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,21 +7,22 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
+import androidx.appcompat.widget.Toolbar;
 
 public class DeviceListOwnActivity extends AppCompatActivity {
 
     ListView listView;
     Button scan;
+    ProgressBar progressBar;
 
     ArrayAdapter<String> scannedDevicesArrayAdapter;
     private BluetoothAdapter mBtAdapter;
@@ -31,7 +31,11 @@ public class DeviceListOwnActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_device_list_own);
+        // inflate option menu
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.main_toolbar);
+        setSupportActionBar(myToolbar);
 
+        progressBar = findViewById(R.id.pbList);
         listView = findViewById(R.id.lvListListView);
         scan = findViewById(R.id.btnListScan);
 
@@ -39,6 +43,8 @@ public class DeviceListOwnActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 System.out.println("scan clicked");
+                progressBar.setIndeterminate(false);
+                progressBar.setVisibility(View.VISIBLE);
                 // populate the data
                 scannedDevicesArrayAdapter = new ArrayAdapter<>(view.getContext(), R.layout.device_name);
                 listView.setAdapter(scannedDevicesArrayAdapter);
@@ -88,14 +94,18 @@ public class DeviceListOwnActivity extends AppCompatActivity {
                 // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 System.out.println("scanning finished");
-                setProgressBarIndeterminateVisibility(false);
-                setTitle("select device");
+                progressBar.setIndeterminate(true);
+                progressBar.setVisibility(View.GONE);;
+                scannedDevicesArrayAdapter.add("scanning complete");
+                /*
                 if (scannedDevicesArrayAdapter.getCount() == 0) {
                     String noDevices = "no Bluetooth devices found";
                     scannedDevicesArrayAdapter.add(noDevices);
                 } else {
                     scannedDevicesArrayAdapter.add("scanning complete");
                 }
+
+                 */
             }
         }
     };
@@ -106,12 +116,6 @@ public class DeviceListOwnActivity extends AppCompatActivity {
     @SuppressLint("MissingPermission")
     private void doDiscovery() {
         //Log.d(TAG, "doDiscovery()");
-        // Indicate scanning in the title
-        setProgressBarIndeterminateVisibility(true);
-        setTitle("scanning");
-
-        // Turn on sub-title for new devices
-        //findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
 
         // If we're already discovering, stop it
         if (mBtAdapter.isDiscovering()) {
@@ -121,7 +125,6 @@ public class DeviceListOwnActivity extends AppCompatActivity {
         // Request discover from BluetoothAdapter
         mBtAdapter.startDiscovery();
     }
-
 
     @SuppressLint("MissingPermission")
     @Override

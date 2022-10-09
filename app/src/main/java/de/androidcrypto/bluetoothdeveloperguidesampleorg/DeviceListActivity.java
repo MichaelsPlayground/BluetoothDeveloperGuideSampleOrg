@@ -43,7 +43,7 @@ import java.util.Set;
  */
 
 /**
- * This code is taken from the Bluetootk sample app and slightly modified
+ * This code is taken from the Bluetooth sample app and slightly modified
  * source: https://github.com/android/connectivity-samples/tree/master/BluetoothChat
  * In res/layout you need to place activity_device_list.xml and
  * device_name.xml as well to show the data

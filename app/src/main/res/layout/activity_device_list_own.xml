@@ -57,6 +57,16 @@
 
     </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/pbList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="50dp"
+        android:minWidth="50dp"
+        android:layout_gravity="center"
+        android:indeterminate="true"
+        android:visibility="invisible"/>
+
     <ListView
         android:id="@+id/lvListListView"
         android:layout_width="match_parent"
