@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     BluetoothAdapter bluetoothAdapter;
     ConnectedThread mConnectedThread;
 
-    Button discoverable, scan, sendText;
+    Button discoverable, scan, list, sendText;
     TextView textViewLog, textViewChat;
     EditText textToSend;
     TextInputLayout textToSendDecoration;
@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
         discoverable = findViewById(R.id.btnMainDiscoverable);
         scan = findViewById(R.id.btnMainScan);
+        list = findViewById(R.id.btnMainList);
         textViewLog = findViewById(R.id.tvMainLog);
         textViewChat = findViewById(R.id.tvMainChat);
         textToSend = findViewById(R.id.etMainTextToSend);
@@ -154,6 +155,15 @@ public class MainActivity extends AppCompatActivity {
                 appendLog("check for already paired and new devices");
                 Intent serverIntent = new Intent(MainActivity.this, DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
+            }
+        });
+
+        list.setVisibility(View.VISIBLE);
+        list.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, DeviceListOwnActivity.class);
+                startActivity(intent);
             }
         });
 
